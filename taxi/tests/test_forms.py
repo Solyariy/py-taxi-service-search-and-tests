@@ -26,4 +26,3 @@ class SearchFormTests(TestCase):
         form = CarSearchForm(data=form_data)
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data, form_data)
-
