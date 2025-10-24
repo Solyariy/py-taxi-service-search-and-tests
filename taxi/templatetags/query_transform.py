@@ -10,5 +10,5 @@ def query_transform(request, **kwargs):
         if value is not None:
             params[key] = value
         else:
-            params.pop(key, 0)
+            params.pop(key, None)
     return params.urlencode()
