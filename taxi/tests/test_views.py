@@ -3,8 +3,6 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from taxi.models import Car, Manufacturer
-from taxi.forms import CarSearchForm, DriverSearchForm, ManufacturerSearchForm
-
 
 DRIVER_LIST_VIEW_URL = reverse("taxi:driver-list")
 CAR_LIST_VIEW_URL = reverse("taxi:car-list")
@@ -36,6 +34,81 @@ class PrivateViewTests(TestCase):
             password="admin"
         )
         self.client.force_login(self.admin)
+
+    def test_drivers_queryset_with_search(self):
+        SEARCH_PARAM = "test_"
+        response_with_filter = self.client.get(DRIVER_LIST_VIEW_URL, {"username": SEARCH_PARAM})
+        drivers_with_filter = get_user_model().objects.filter(username__icontains=SEARCH_PARAM)
+        qs_filter = response_with_filter.context.get("driver_list")
+        self.assertEqual(response_with_filter.status_code, 200)
+        self.assertQuerySetEqual(
+            drivers_with_filter,
+            qs_filter,
+            ordered=False
+        )
+        self.assertTrue(qs_filter.exists())
+
+    def test_drivers_empty_search(self):
+        SEARCH_PARAM = "sth"
+        response_with_filter = self.client.get(DRIVER_LIST_VIEW_URL, {"username": SEARCH_PARAM})
+        qs_filter = response_with_filter.context.get("driver_list")
+        self.assertEqual(response_with_filter.status_code, 200)
+        self.assertQuerySetEqual(
+            qs_filter,
+            [],
+            ordered=False
+        )
+        self.assertFalse(qs_filter.exists())
+
+    def test_cars_queryset_with_search(self):
+        SEARCH_PARAM = "test_"
+        response_with_filter = self.client.get(CAR_LIST_VIEW_URL, {"model": SEARCH_PARAM})
+        cars_with_filter = Car.objects.filter(model__icontains=SEARCH_PARAM)
+        qs_filter = response_with_filter.context.get("car_list")
+        self.assertEqual(response_with_filter.status_code, 200)
+        self.assertQuerySetEqual(
+            cars_with_filter,
+            qs_filter,
+            ordered=False
+        )
+        self.assertTrue(qs_filter.exists())
+
+    def test_cars_empty_search(self):
+        SEARCH_PARAM = "sth"
+        response_with_filter = self.client.get(CAR_LIST_VIEW_URL, {"model": SEARCH_PARAM})
+        qs_filter = response_with_filter.context.get("car_list")
+        self.assertEqual(response_with_filter.status_code, 200)
+        self.assertQuerySetEqual(
+            qs_filter,
+            [],
+            ordered=False
+        )
+        self.assertFalse(qs_filter.exists())
+
+    def test_manufacturers_queryset_with_search(self):
+        SEARCH_PARAM = "test_"
+        response_with_filter = self.client.get(MANUFACTURER_LIST_VIEW_URL, {"name": SEARCH_PARAM})
+        manufacturers_with_filter = Manufacturer.objects.filter(name__icontains=SEARCH_PARAM)
+        qs_filter = response_with_filter.context.get("manufacturer_list")
+        self.assertEqual(response_with_filter.status_code, 200)
+        self.assertQuerySetEqual(
+            manufacturers_with_filter,
+            qs_filter,
+            ordered=False
+        )
+        self.assertTrue(qs_filter.exists())
+
+    def test_manufacturers_empty_search(self):
+        SEARCH_PARAM = "sth"
+        response_with_filter = self.client.get(MANUFACTURER_LIST_VIEW_URL, {"name": SEARCH_PARAM})
+        qs_filter = response_with_filter.context.get("manufacturer_list")
+        self.assertEqual(response_with_filter.status_code, 200)
+        self.assertQuerySetEqual(
+            qs_filter,
+            [],
+            ordered=False
+        )
+        self.assertFalse(qs_filter.exists())
 
     def test_retrieve_drivers(self):
         get_user_model().objects.create_user(
